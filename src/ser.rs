@@ -2247,6 +2247,44 @@ where
     Ok(string)
 }
 
+/// Append the given data structure serialized as JSON to a string.
+///
+/// # Errors
+///
+/// Serialization can fail if `T`'s implementation of `Serialize` decides to
+/// fail, or if `T` contains a map with non-string keys.
+#[inline]
+pub fn append_to_string<T>(string: &mut String, value: &T) -> Result<()>
+where
+    T: ?Sized + Serialize,
+{
+    let mut vec = unsafe {
+        // We do not emit invalid UTF-8.
+        string.as_mut_vec()
+    };
+    tri!(to_writer(&mut vec, value));
+    Ok(())
+}
+
+/// Append the given data structure serialized as pretty-printed JSON to a string.
+///
+/// # Errors
+///
+/// Serialization can fail if `T`'s implementation of `Serialize` decides to
+/// fail, or if `T` contains a map with non-string keys.
+#[inline]
+pub fn append_to_string_pretty<T>(string: &mut String, value: &T) -> Result<()>
+where
+    T: ?Sized + Serialize,
+{
+    let mut vec = unsafe {
+        // We do not emit invalid UTF-8.
+        string.as_mut_vec()
+    };
+    tri!(to_writer_pretty(&mut vec, value));
+    Ok(())
+}
+
 fn indent<W>(wr: &mut W, n: usize, s: &[u8]) -> io::Result<()>
 where
     W: ?Sized + io::Write,
